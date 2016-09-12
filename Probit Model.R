@@ -1,5 +1,6 @@
 library(R2jags)
 library(R2WinBUGS)
+library(ggplot2)
 
 load('probit_data.Rdata')
 
@@ -7,7 +8,7 @@ data.list <- list(I = dataset[,"i"],
                   U = dataset[,"u"], 
                   V = dataset[,"v"], 
                   Y = dataset[,"y"], 
-                  n = dim(dataset),
+                  n = dim(dataset)[1],
                   num.patients = 114,
                   num.regions = 68)
 
@@ -62,3 +63,10 @@ parameters <- c("z", "alpha", "lambda", "sd.a", "sd.l")
 
 game.sim <- jags(data.list, inits = inits, parameters, model.file = textConnection(model), n.iter = 5000)
 game.bugs <- as.mcmc(game.sim$BUGSoutput$sims.matrix)
+
+#View posterior parameter estimates
+load('model_output.Rdata')
+#For example alpha[1]
+#Can choose from alpha[1], ..., alpha[114], lamda[1], ..., lambda[114], z[1], ..., z[68]
+ggplot() + geom_density(aes(x = as.vector(game.bugs[,"alpha[1]"])))
+
