@@ -66,5 +66,27 @@ game.bugs <- as.mcmc(game.sim$BUGSoutput$sims.matrix)
 load('model_output_one_lambda.Rdata')
 #For example alpha[1]
 #Can choose from alpha[1], ..., alpha[114], lamda, z[1], ..., z[68]
-ggplot() + geom_density(aes(x = as.vector(game.bugs[,"alpha[1]"])))
+ggplot() + geom_density(aes(x = as.vector(game.bugs[,"z[1]"]))) + labs(title = "z[1] posterior distribution", x = "z[1]")
 
+#Trace plots
+ggplot() + geom_line(aes(x = 1:3750, y = as.vector(game.bugs[,"z[1]"]))) + labs(title = "z[1] trace plot", x = "iteration", y = "value")
+
+#Get mean locations of each region in one-dimensional latent space
+locations <- sapply(1:68, function(i) {
+  mean(game.bugs[,paste0("z[", i,"]")])
+})
+
+#Plot locations of each region in latent space
+ggplot() + geom_point(aes(x = 1:68, y = locations)) + labs(title = "Region location in latent space", x = "region", y = "location")
+
+#Compare latent space location to physical space location
+load('Coord_Brain.Rdata')
+distance.comparison <- data.frame(pairs = character(), physical.distance = numeric(), latent.distance = numeric)
+for(i in 1:67) {
+  for(j in (i+1):68) {
+    p.dist = sqrt((Coord_Brain[i,1] - Coord_Brain[j,1])^2 + (Coord_Brain[i,2] - Coord_Brain[j,2])^2)
+    l.dist = abs(locations[i] - locations[j])
+    distance.comparison = rbind(distance.comparison, data.frame(pairs = paste0(i, ":", j), physical.distance = p.dist, latent.distance = l.dist))
+  }
+}
+ggplot() + geom_point(data = distance.comparison, aes(x = latent.distance, y = physical.distance)) + labs(title = "Pairwise brain region distances in latent space vs. physical space", x = "latent distance", y = "physical distance")
