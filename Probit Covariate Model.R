@@ -57,7 +57,7 @@ lambda ~ dnorm(0, phi.l) T(,0)
 #Priors for beta's
 ##
 sd.b ~ dt(0, 0.1, 1) T(0,)
-phi.b <- pow(sd.l, -2)
+phi.b <- pow(sd.b, -2)
 beta[1] ~ dnorm(0, phi.b)
 beta[2] ~ dnorm(0, phi.b)
 }
