@@ -42,24 +42,21 @@ z[u] ~ dnorm(0, 1)
 ##
 sd.a ~ dt(0, 0.1, 1) T(0,)
 phi.a <- pow(sd.a, -2)
+mu.a ~ dnorm(0, 0.001)
 for(i in 1:num.patients) {
-alpha[i] ~ dnorm(0, phi.a)
+alpha[i] ~ dnorm(mu.a, phi.a)
 }
 
 ##
 #Prior for lambda
 ##
-sd.l ~ dt(0, 0.1, 1) T(0,)
-phi.l <- pow(sd.l, -2)
-lambda ~ dnorm(0, phi.l) T(,0)
+lambda ~ dnorm(0, 0.001) T(,0)
 
 ##
 #Priors for beta's
 ##
-sd.b ~ dt(0, 0.1, 1) T(0,)
-phi.b <- pow(sd.b, -2)
-beta[1] ~ dnorm(0, phi.b)
-beta[2] ~ dnorm(0, phi.b)
+beta[1] ~ dnorm(0, 0.001)
+beta[2] ~ dnorm(0, 0.001)
 }
 "
 
@@ -68,14 +65,13 @@ inits <- function() {
   alpha <- rep(0.1, data.list$num.patients)
   lambda <- 0
   beta <- rep(0, 2)
+  mu.a <- 0
   sd.a <- 0.1
-  sd.l <- 0.1
   sd.q <- 0.1
-  sd.b <- 0.1
-  return(list(z = z, alpha = alpha, lambda = lambda, beta = beta, sd.a = sd.a, sd.l = sd.l, sd.q = sd.q, sd.b = sd.b))
+  return(list(z = z, alpha = alpha, lambda = lambda, beta = beta, mu.a = mu.a, sd.a = sd.a, sd.q = sd.q))
 }
 
-parameters <- c("z", "alpha", "lambda", "beta", "sd.a", "sd.l", "sd.q", "sd.b")
+parameters <- c("z", "alpha", "lambda", "beta", "mu.a", "sd.a", "sd.q")
 
 game.sim <- jags(data.list, inits = inits, parameters, model.file = textConnection(model), n.iter = 5000)
 game.bugs <- as.mcmc(game.sim$BUGSoutput$sims.matrix)
@@ -84,7 +80,7 @@ game.bugs <- as.mcmc(game.sim$BUGSoutput$sims.matrix)
 load('model_output_poisson.Rdata')
 
 #Posterior distributions (beta[1] and beta[2] seem to be the only non-weird ones...)
-ggplot() + geom_density(aes(x = as.vector(game.bugs[,"z[1]"]))) + labs(title = "z[1] posterior distribution", x = "z[1]")
+ggplot() + geom_density(aes(x = as.vector(game.bugs[,"alpha[1]"]))) + labs(title = "alpha[1] posterior distribution", x = "alpha[1]")
 
 #Trace plots
 ggplot() + geom_line(aes(x = 1:3750, y = as.vector(game.bugs[,"z[1]"]))) + labs(title = "z[1] trace plot", x = "iteration", y = "value")
